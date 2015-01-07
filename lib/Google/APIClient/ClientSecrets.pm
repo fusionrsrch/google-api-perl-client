@@ -109,30 +109,35 @@ class Google::APIClient::ClientSecrets {
 #        :authorization_uri, :token_credential_uri, :access_token,
 #        :refresh_token, :id_token, :expires_in, :expires_at, :issued_at
 #      )
-        has 'flow'          => ( isa => 'Str', is => 'rw' );
-        has 'client_id'     => ( isa => 'Str', is => 'rw' );
-        has 'client_secret' => ( isa => 'Str', is => 'rw' );
-        has 'redirect_uris' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#        has 'flow' => ( isa => 'Str', is => 'rw' );
-#
-#      ##
-#      # Serialize back to the original JSON form
-#      #
-#      # @return [String]
-#      #   JSON
+        has 'flow'                 => ( isa => 'Str', is => 'rw' );
+        has 'client_id'            => ( isa => 'Str', is => 'rw' );
+        has 'client_secret'        => ( isa => 'Str', is => 'rw' );
+        has 'redirect_uris'        => ( isa => 'Str', is => 'rw' );
+        has 'javascript_origins'   => ( isa => 'Str', is => 'rw' );
+        has 'authorization_uri'    => ( isa => 'Str', is => 'rw' );
+        has 'token_credential_uri' => ( isa => 'Str', is => 'rw' );
+        has 'access_token'         => ( isa => 'Str', is => 'rw' );
+        has 'refresh_token'        => ( isa => 'Str', is => 'rw' );
+        has 'id_token'             => ( isa => 'Str', is => 'rw' );
+        has 'expires_in'           => ( isa => 'Str', is => 'rw' );
+        has 'expires_at'           => ( isa => 'Str', is => 'rw' );
+        has 'ssued_at'             => ( isa => 'Str', is => 'rw' );
+
+      ##
+      # Serialize back to the original JSON form
+      #
+      # @return [String]
+      #   JSON
 #      def to_json
+    action to_json() {
 #        return MultiJson.dump(to_hash)
 #      end
-#      
+        return;
+    }
+
+      
 #      def to_hash
+    action to_hash() {
 #        {
 #          self.flow => ({
 #            'client_id' => self.client_id,
@@ -156,8 +161,12 @@ class Google::APIClient::ClientSecrets {
 #          end
 #        }
 #      end
-#      
+        return;
+    }
+      
+
 #      def to_authorization
+    action to_authorization() {
 #        gem 'signet', '>= 0.4.0'
 #        require 'signet/oauth_2/client'
 #        # NOTE: Do not rely on this default value, as it may change
@@ -187,5 +196,7 @@ class Google::APIClient::ClientSecrets {
 #  end
 #end
 #
+        return;
+    }
 
 }

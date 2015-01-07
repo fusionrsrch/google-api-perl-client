@@ -22,6 +22,7 @@ class Google::APIClient {
 #require 'retriable'
 #
 #require 'google/api_client/version'
+    use Google::APIClient::Version;
 #require 'google/api_client/logging'
 #require 'google/api_client/errors'
 #require 'google/api_client/environment'
@@ -773,14 +774,15 @@ class Google::APIClient {
         return;
     }
 
-#    ##
-#    # Returns on proc for special processing of retries for authorization errors
-#    # Only 401s should be retried and only if the credentials are refreshable
-#    #
-#    # @param [#fetch_access_token!] authorization
-#    #   OAuth 2 credentials
-#    # @return [Proc]
+    ##
+    # Returns on proc for special processing of retries for authorization errors
+    # Only 401s should be retried and only if the credentials are refreshable
+    #
+    # @param [#fetch_access_token!] authorization
+    #   OAuth 2 credentials
+    # @return [Proc]
 #    def authorization_error_handler(authorization)
+    action authorization_error_handler($authorization) {
 #      can_refresh = authorization.respond_to?(:refresh_token) && auto_refresh_token 
 #      Proc.new do |exception, tries|
 #        next unless exception.kind_of?(AuthorizationError)
@@ -795,21 +797,21 @@ class Google::APIClient {
 #        raise exception
 #      end
 #    end
-#
-#    ##
-#    # Returns on proc for special processing of retries as not all client errors
-#    # are recoverable. Only 401s should be retried (via authorization_error_handler)
-#    #
-#    # @return [Proc]
+    }
+
+
+    ##
+    # Returns on proc for special processing of retries as not all client errors
+    # are recoverable. Only 401s should be retried (via authorization_error_handler)
+    #
+    # @return [Proc]
 #    def client_error_handler
+   action client_error_handler() {
 #      Proc.new do |exception, tries|
 #        raise exception if exception.kind_of?(ClientError)
 #      end
 #    end
-#
-#  end
-#
-#end
-#
+    }
+
 
 }

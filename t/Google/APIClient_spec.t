@@ -51,6 +51,7 @@ describe 'Google::APIClient' => sub {
 #  include ConnectionHelpers
 #
 #  let(:client) { Google::APIClient.new(:application_name => 'API Client Tests') }
+    my $client = Google::APIClient->new( application_name => 'API Client Tests');
 #
     it "should pass the faraday options provided on initialization to FaraDay configuration block" => sub { 
 #    client = Google::APIClient.new(faraday_option: {timeout: 999})
@@ -58,6 +59,8 @@ describe 'Google::APIClient' => sub {
     };
 #
     it 'should make its version number available' => sub { 
+        my $version = Google::APIClient::Version->new();
+        print Dumper( $version->STRING );
 #    expect(Google::APIClient::VERSION::STRING).to be_instance_of(String)
     };
 #
