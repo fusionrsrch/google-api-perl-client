@@ -16,9 +16,9 @@ use Google::APIClient;
 use Google::APIClient::ClientSecrets;
 use Google::APIClient::Auth::InstalledAppFlow;
 
-## Initialize the client.
+# Initialize the client.
 my $client = Google::APIClient->new(
-    application_name => 'Example Ruby application',
+    application_name => 'Example Perl application',
     application_version => '1.0.0'
 );
 
