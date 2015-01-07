@@ -1,10 +1,17 @@
-#!/usr/bin/env perl
+# Google API Perl Client
 
-use strict;
-use warnings;
+<dl>
+  <dt>Homepage</dt><dd><a href="https://github.com/fusionrsrch/google-api-perl-client.git">https://github.com/fusionrsrch/google-api-perl-client.git</a></dd>
+</dl>
 
-use lib 'lib';
+## Description
 
+The Google API Perl Client makes it trivial to discover and access supported
+APIs.
+
+## Example Usage
+
+```perl
 use Google::APIClient;
 use Google::APIClient::ClientSecrets;
 use Google::APIClient::Auth::InstalledAppFlow;
@@ -39,3 +46,4 @@ my $result = $client->execute(
     api_method => $plus->activities->list,
     parameters => {'collection' => 'public', 'userId' => 'me'}
 );
+```
