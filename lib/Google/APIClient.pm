@@ -1,5 +1,11 @@
-use strict;
-use warnings;
-package Google::APIClient;
+# ABSTRACT: A Google API Ruby Client 
 
-1;
+use MooseX::Declare;
+
+class Google::APIClient {
+
+    use Data::Dumper;
+
+    use Method::Signatures::Simple name => 'action';
+
+}
