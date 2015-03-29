@@ -3,19 +3,30 @@ use warnings;
 
 use Test::More::Behaviour;
 
+use Data::Dumper;
+
 #use Google::APIClient;
 
 BEGIN {
-    use_ok('Google::APIClient::Service::Result');
+    use_ok('Google::APIClient::Result');
 }
+
+my $CLIENT;
+my $plus;
+my $reference;
+my $request;
+my $result;
+my $response;
 
 #require 'spec_helper'
 #
 #require 'google/api_client'
+use Google::APIClient; 
 #
 #RSpec.describe Google::APIClient::Result do
 #describe 'Google::APIClient::Service::Result' => sub {
 #  CLIENT = Google::APIClient.new(:application_name => 'API Client Tests') unless defined?(CLIENT)
+    $CLIENT = Google::APIClient->new(application_name => 'API Client Tests');
 #
 #  describe 'with the plus API' do
 describe 'with the plus API' => sub {
@@ -31,8 +42,19 @@ describe 'with the plus API' => sub {
 #        }
 #      })
 #      @request = @reference.to_http_request
-#
-#      # Response double
+        $plus = $CLIENT->discovered_api('plus', 'v1');
+        $reference = Google::APIClient::Reference->new(
+            #api_method => $plus->activities->list,
+            api_method => 'dude',
+            parameters => {
+                'userId' => 'me',
+                'collection' => 'public',
+                'maxResults' => 20
+            }
+        );
+        $request = $reference->to_http_request();
+
+    # Response double
 #      @response = double("response")
 #      allow(@response).to receive(:status).and_return(200)
 #      allow(@response).to receive(:headers).and_return({
@@ -68,44 +90,59 @@ describe 'with a next page token' => sub {
 #        )
 #        @result = Google::APIClient::Result.new(@reference, @response)
 #      end
-#
+
+    $result = Google::APIClient::Result->new($reference, $response);        
+
     it 'should indicate a successful response' => sub {
 #        expect(@result.error?).to be_falsey
     };
 
     it 'should return the correct next page token' => sub { 
 #        expect(@result.next_page_token).to eq('NEXT+PAGE+TOKEN')
+        is($result->next_page_token, 'NEXT+PAGE+TOKEN');
     };
 
     it 'should escape the next page token when calling next_page' => sub { 
 #        reference = @result.next_page
+        my $_reference = $result->next_page;
 #        expect(Hash[reference.parameters]).to include('pageToken')
 #        expect(Hash[reference.parameters]['pageToken']).to eq('NEXT+PAGE+TOKEN')
+        my $parameters = $_reference->parameters;
+        is( $parameters->{pageToken}, 'NEXT+PAGE+TOKEN' );
 #        url = reference.to_env(CLIENT.connection)[:url]
 #        expect(url.to_s).to include('pageToken=NEXT%2BPAGE%2BTOKEN')
     };
 
     it 'should return content type correctly' => sub { 
 #        expect(@result.media_type).to eq('application/json')
+        is( $result->media_type, 'application/json' );
     };
 
     it 'should return the result data correctly' => sub { 
+        my $data = $result->data;
 #        expect(@result.data?).to be_truthy
 #        expect(@result.data.class.to_s).to eq(
 #            'Google::APIClient::Schema::Plus::V1::ActivityFeed'
 #        )
 #        expect(@result.data.kind).to eq('plus#activityFeed')
+        is( $data->{kind}, 'plus#activityFeed');
 #        expect(@result.data.etag).to eq('FOO')
+        is( $data->{etag}, 'FOO');
 #        expect(@result.data.nextPageToken).to eq('NEXT+PAGE+TOKEN')
-#        expect(@result.data.selfLink).to eq(
+        is( $data->{nextPageToken}, 'NEXT+PAGE+TOKEN');
+#        expect(@result.data.selfLink).to eq('
 #            'https://www.googleapis.com/plus/v1/people/foo/activities/public?'
 #        )
+        is( $data->{selfLink}, 'https://www.googleapis.com/plus/v1/people/foo/activities/public?');
 #        expect(@result.data.nextLink).to eq(
 #            'https://www.googleapis.com/plus/v1/people/foo/activities/public?' +
 #            'maxResults=20&pageToken=NEXT%2BPAGE%2BTOKEN'
 #        )
+        is( $data->{nextLink}, 'https://www.googleapis.com/plus/v1/people/foo/activities/public?maxResults=20&pageToken=NEXT%2BPAGE%2BTOKEN');
 #        expect(@result.data.title).to eq('Plus Public Activity Feed for ')
+        is( $data->{title}, 'Plus Public Activity Feed for ');
 #        expect(@result.data.id).to eq("123456790")
+        is( $data->{id}, "123456790");
 #        expect(@result.data.items).to be_empty
     };
 };
@@ -127,13 +164,16 @@ describe 'without a next page token' => sub {
 #        )
 #        @result = Google::APIClient::Result.new(@reference, @response)
 #      end
-#
+
+    $result = Google::APIClient::Result->new($reference, $response);
+
     it 'should not return a next page token' => sub { 
 #        expect(@result.next_page_token).to eq(nil)
     };
 
     it 'should return content type correctly' => sub { 
 #        expect(@result.media_type).to eq('application/json')
+        is($result->media_type, 'application/json'); 
     };
 
     it 'should return the result data correctly' => sub { 
@@ -174,13 +214,16 @@ describe 'with JSON error response' => sub {
 #        allow(@response).to receive(:status).and_return(400)
 #        @result = Google::APIClient::Result.new(@reference, @response)
 #      end
-#
+
+    $result = Google::APIClient::Result->new($reference, $response);
+
     it 'should return error status correctly' => sub { 
 #        expect(@result.error?).to be_truthy
     };
 
     it 'should return the correct error message' => sub { 
 #        expect(@result.error_message).to eq('Parse Error')
+        is( $result->error_message, 'Parse Error');
     };
 };
 

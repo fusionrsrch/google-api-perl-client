@@ -29,7 +29,9 @@ class Google::APIClient {
 #require 'google/api_client/discovery'
 #require 'google/api_client/request'
 #require 'google/api_client/reference'
+    use Google::APIClient::Reference;
 #require 'google/api_client/result'
+    use Google::APIClient::Request2;
 #require 'google/api_client/media'
 #require 'google/api_client/service_account'
 #require 'google/api_client/batch'
@@ -45,86 +47,130 @@ class Google::APIClient {
 #  class APIClient
 #    include Google::APIClient::Logging
 #    
-#    ##
-#    # Creates a new Google API client.
-#    #
-#    # @param [Hash] options The configuration parameters for the client.
-#    # @option options [Symbol, #generate_authenticated_request] :authorization
-#    #   (:oauth_1)
-#    #   The authorization mechanism used by the client.  The following
-#    #   mechanisms are supported out-of-the-box:
-#    #   <ul>
-#    #     <li><code>:two_legged_oauth_1</code></li>
-#    #     <li><code>:oauth_1</code></li>
-#    #     <li><code>:oauth_2</code></li>
-#    #   </ul>
-#    # @option options [Boolean] :auto_refresh_token (true)
-#    #   The setting that controls whether or not the api client attempts to
-#    #   refresh authorization when a 401 is hit in #execute. If the token does 
-#    #   not support it, this option is ignored.
-#    # @option options [String] :application_name
-#    #   The name of the application using the client.
-#    # @option options [String] :application_version
-#    #   The version number of the application using the client.
-#    # @option options [String] :user_agent
-#    #   ("{app_name} google-api-ruby-client/{version} {os_name}/{os_version}")
-#    #   The user agent used by the client.  Most developers will want to
-#    #   leave this value alone and use the `:application_name` option instead.
-#    # @option options [String] :host ("www.googleapis.com")
-#    #   The API hostname used by the client. This rarely needs to be changed.
-#    # @option options [String] :port (443)
-#    #   The port number used by the client. This rarely needs to be changed.
-#    # @option options [String] :discovery_path ("/discovery/v1")
-#    #   The discovery base path. This rarely needs to be changed.
-#    # @option options [String] :ca_file
-#    #   Optional set of root certificates to use when validating SSL connections.
-#    #   By default, a bundled set of trusted roots will be used.
-#    # @options options[Hash] :force_encoding
-#    #   Experimental option. True if response body should be force encoded into the charset
-#    #   specified in the Content-Type header. Mostly intended for compressed content.
-#    # @options options[Hash] :faraday_options
-#    #   Pass through of options to set on the Faraday connection
+    ##
+    # Creates a new Google API client.
+    #
+    # @param [Hash] options The configuration parameters for the client.
+    # @option options [Symbol, #generate_authenticated_request] :authorization
+    #   (:oauth_1)
+    #   The authorization mechanism used by the client.  The following
+    #   mechanisms are supported out-of-the-box:
+    #   <ul>
+    #     <li><code>:two_legged_oauth_1</code></li>
+    #     <li><code>:oauth_1</code></li>
+    #     <li><code>:oauth_2</code></li>
+    #   </ul>
+    # @option options [Boolean] :auto_refresh_token (true)
+    #   The setting that controls whether or not the api client attempts to
+    #   refresh authorization when a 401 is hit in #execute. If the token does 
+    #   not support it, this option is ignored.
+    # @option options [String] :application_name
+    #   The name of the application using the client.
+    # @option options [String] :application_version
+    #   The version number of the application using the client.
+    # @option options [String] :user_agent
+    #   ("{app_name} google-api-ruby-client/{version} {os_name}/{os_version}")
+    #   The user agent used by the client.  Most developers will want to
+    #   leave this value alone and use the `:application_name` option instead.
+    # @option options [String] :host ("www.googleapis.com")
+    #   The API hostname used by the client. This rarely needs to be changed.
+    # @option options [String] :port (443)
+    #   The port number used by the client. This rarely needs to be changed.
+    # @option options [String] :discovery_path ("/discovery/v1")
+    #   The discovery base path. This rarely needs to be changed.
+    # @option options [String] :ca_file
+    #   Optional set of root certificates to use when validating SSL connections.
+    #   By default, a bundled set of trusted roots will be used.
+    # @options options[Hash] :force_encoding
+    #   Experimental option. True if response body should be force encoded into the charset
+    #   specified in the Content-Type header. Mostly intended for compressed content.
+    # @options options[Hash] :faraday_options
+    #   Pass through of options to set on the Faraday connection
 #    def initialize(options={})
-#      logger.debug { "#{self.class} - Initializing client with options #{options}" }
-#      
+
+    has 'options' => ( isa => 'HashRef', is => 'ro' );
+    action BUILD() {
+        print "Google::APIClient - Initializing client with options ".Data::Dumper::Dumper( $self->options )."\n";
+
+        my $options = $self->options;
+
+        # Almost all API usage will have a host of 'www.googleapis.com'.
+        my $host = $options->{host} || 'www.googleapis.com';
+        my $port = $options->{port} || 443;
+        my $discovery_path = $options->{discovery_path} || '/discovery/v1';
+
+        $self->host( $host );
+        $self->port( $port );
+        $self->discovery_path( $discovery_path );
+
 #      # Normalize key to String to allow indifferent access.
 #      options = options.inject({}) do |accu, (key, value)|
 #        accu[key.to_sym] = value
 #        accu
 #      end
-#      # Almost all API usage will have a host of 'www.googleapis.com'.
-#      self.host = options[:host] || 'www.googleapis.com'
-#      self.port = options[:port] || 443
-#      self.discovery_path = options[:discovery_path] || '/discovery/v1'
-#
-#      # Most developers will want to leave this value alone and use the
-#      # application_name option.
+
+        # Most developers will want to leave this value alone and use the
+        # application_name option.
+        my $application_string = '';
 #      if options[:application_name]
+        if ( $options->{application_name} ) {
 #        app_name = options[:application_name]
+            my $app_name = $options->{application_name};
 #        app_version = options[:application_version]
+            my $app_version = $options->{application_version} || '0.0.0';
 #        application_string = "#{app_name}/#{app_version || '0.0.0'}"
+            $application_string = "$app_name/$app_version";
 #      else
+        }
+        else {
 #        logger.warn { "#{self.class} - Please provide :application_name and :application_version when initializing the client" }
+            print "Google::APIClient - Please provide :application_name and :application_version when initializing the client\n";            
 #      end
-#
+        }
+    
+       #
 #      proxy = options[:proxy] || Object::ENV["http_proxy"]
+        my $proxy = $options->{proxy} || '';
 #
 #      self.user_agent = options[:user_agent] || (
 #        "#{application_string} " +
 #        "google-api-ruby-client/#{Google::APIClient::VERSION::STRING} #{ENV::OS_VERSION} (gzip)"
 #      ).strip
+
+        my $user_agent = '';
+
+        if ( $options->{user_agent} ) {
+            $user_agent = $options->{user_agent};
+        }
+        else {
+            my $version = Google::APIClient::Version->new();
+            $user_agent = "$application_string " . "google-api-perl-client/".$version->STRING." ".$^O." (gzip)";
+        }
+
+        $self->user_agent( $user_agent );
+
 #      # The writer method understands a few Symbols and will generate useful
 #      # default authentication mechanisms.
 #      self.authorization =
 #        options.key?(:authorization) ? options[:authorization] : :oauth_2
 #      self.auto_refresh_token = options.fetch(:auto_refresh_token) { true }
 #      self.key = options[:key]
+        my $key = $options->{key} || '';
+        $self->key( $key ); 
 #      self.user_ip = options[:user_ip]
+        my $user_ip = $options->{user_ip} || '';
+        $self->user_ip( $user_ip );
 #      self.retries = options.fetch(:retries) { 0 }
 #      self.expired_auth_retry = options.fetch(:expired_auth_retry) { true }
 #      @discovery_uris = {}
 #      @discovery_documents = {}
 #      @discovered_apis = {}
+
+        
+        
+    }
+
+
 #      ca_file = options[:ca_file] || File.expand_path('../../cacerts.pem', __FILE__)
 #      self.connection = Faraday.new do |faraday|
 #        faraday.response :charset if options[:force_encoding]
@@ -209,7 +255,9 @@ class Google::APIClient {
     #
     # @return [Faraday::Connection]
 #    attr_accessor :connection
-    has 'connection' => ( isa => 'Str', is => 'rw' );
+    has 'connection'  => ( isa => 'LWP::UserAgent', is => 'rw', builder => '__build_lwp_handle'  );
+
+    action __build_lwp_handle() { return LWP::UserAgent->new(); }
 
     ##
     # The setting that controls whether or not the api client attempts to
@@ -271,7 +319,7 @@ class Google::APIClient {
     # @return [FixNum]
     #  Number of retries
 #    attr_accessor :retries
-    has 'retries' => ( isa => 'Int', is => 'rw' );
+    has 'retries' => ( isa => 'Int', is => 'rw', default => 0 );
 
     ##
     # Whether or not an expired auth token should be re-acquired
@@ -606,7 +654,9 @@ class Google::APIClient {
 #      }.merge(options)
 #      return Google::APIClient::Request.new(options)
 #    end
-        return;
+        my $request = Google::APIClient::Request2->new();
+
+        return $request;
     }
 
 
@@ -653,7 +703,17 @@ class Google::APIClient {
     #
     # @see Google::APIClient#generate_request
 #    def execute!(*params)
-    action execute_bang($params) {    
+    action execute_bang() {    
+
+        my @params = @_;
+
+        print Dumper( \@params );
+       
+        my $request; 
+        my %options = ();
+        $options{authenticated} = 1;
+        $options{retries} = 0;
+
 #      if params.first.kind_of?(Google::APIClient::Request)
 #        request = params.shift
 #        options = params.shift || {}
@@ -673,7 +733,7 @@ class Google::APIClient {
 #        options[:body] = params.shift if params.size > 0
 #        options[:headers] = params.shift if params.size > 0
 #        options.update(params.shift) if params.size > 0
-#        request = self.generate_request(options)
+            $request = $self->generate_request(\%options);
 #      end
 #      
 #      request.headers['User-Agent'] ||= '' + self.user_agent unless self.user_agent.nil?
@@ -681,26 +741,42 @@ class Google::APIClient {
 #      request.headers['Content-Type'] ||= ''
 #      request.parameters['key'] ||= self.key unless self.key.nil?
 #      request.parameters['userIp'] ||= self.user_ip unless self.user_ip.nil?
-#
-#      connection = options[:connection] || self.connection
-#      request.authorization = options[:authorization] || self.authorization unless options[:authenticated] == false
-#      
-#      tries = 1 + (options[:retries] || self.retries)
-#      attempt = 0
-#
+        my %headers = ();
+        $headers{'User-Agent'} = '';
+        $headers{'Accept-Encoding'} = 'gzip';
+        $headers{'Content-Type'} = '';
+        if ( $self->user_agent ) { $headers{'User-Agent'} = $self->user_agent; }
+
+        my %parameters = ();
+        $parameters{'key'} = '';
+        $parameters{'userIp'} = '';
+        if ( $self->key ) { $parameters{'key'} = $self->key; }
+
+        $request->headers( \%headers );
+        $request->parameters( \%parameters );
+
+        my $connection = $options{connection} || $self->connection;
+        unless ( $options{authenticated} == 0 ) {
+            $request->authorization( $options{authorization} || $self->authorization );
+        }
+
+        my $tries = 1 + ( $options{retries} || $self->retries);
+        my $attempt = 0;
+
 #      Retriable.retriable :tries => tries, 
 #                          :on => [TransmissionError],
 #                          :on_retry => client_error_handler,
 #                          :interval => lambda {|attempts| (2 ** attempts) + rand} do
-#        attempt += 1
-#
-#        # This 2nd level retriable only catches auth errors, and supports 1 retry, which allows
-#        # auth to be re-attempted without having to retry all sorts of other failures like
-#        # NotFound, etc
+        $attempt += 1;
+
+        # This 2nd level retriable only catches auth errors, and supports 1 retry, which allows
+        # auth to be re-attempted without having to retry all sorts of other failures like
+        # NotFound, etc
 #        Retriable.retriable :tries => ((expired_auth_retry || tries > 1) && attempt == 1) ? 2 : 1, 
 #                            :on => [AuthorizationError],
 #                            :on_retry => authorization_error_handler(request.authorization) do
 #          result = request.send(connection, true)
+        my $result = $request->send($connection, 1);
 #
 #          case result.status
 #            when 200...300
@@ -733,13 +809,20 @@ class Google::APIClient {
     #
     # @see Google::APIClient#execute
 #    def execute(*params)
-    action execute($params) {
+    action execute() {
 #      begin
 #        return self.execute!(*params)
 #      rescue TransmissionError => e
 #        return e.result
 #      end
 #    end
+
+        try {
+            return $self->execute_bang(@_);
+        } catch {
+            warn "caught error: $_"; # not $@
+        };
+
         return;
     }
 

@@ -6,16 +6,16 @@ use Test::More::Behaviour;
 use Google::APIClient;
 
 BEGIN {
-    use_ok('Google::APIClient::Service::Request');
+    use_ok('Google::APIClient::Request');
 }
 
-describe 'Google::APIClient::Service::Request' => sub {
+describe 'Google::APIClient::Request' => sub {
 
     my $CLIENT = Google::APIClient->new( application_name => 'API Client Tests' );
 
     it 'should normalize parameter names to strings' => sub { 
 
-        my $request = Google::APIClient::Service::Request->new( 
+        my $request = Google::APIClient::Request->new( 
             uri => 'https://www.google.com',
             parameters => { a => '1', 'b' => '2' }
         );

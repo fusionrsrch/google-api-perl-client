@@ -10,9 +10,9 @@ use Google::APIClient::ClientSecrets;
 use Google::APIClient::Auth::InstalledAppFlow;
 
 ## Initialize the client.
-my $client = Google::APIClient->new(
+my $client = Google::APIClient->new( options => {
     application_name => 'Example Ruby application',
-    application_version => '1.0.0'
+    application_version => '1.0.0' }
 );
 
 # Initialize Google+ API. Note this will make a request to the
@@ -36,6 +36,7 @@ $client->set_authorization( $flow->authorize );
 
 # Make an API call.
 my $result = $client->execute(
-    api_method => $plus->activities->list,
+    #api_method => $plus->activities->list,
+    api_method => 'dude',
     parameters => {'collection' => 'public', 'userId' => 'me'}
 );
